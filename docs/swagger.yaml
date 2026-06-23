@@ -1,0 +1,69 @@
+definitions:
+  http.NotificationRequest:
+    properties:
+      level:
+        example: INFO
+        type: string
+      message:
+        example: 'Signal generated: BUY BTC/USDT'
+        type: string
+      source:
+        example: Quant Engine
+        type: string
+    type: object
+info:
+  contact: {}
+  description: This is the API for the Quant Notification Engine.
+  title: Notification Engine API
+  version: "1.0"
+paths:
+  /api/v1/notify:
+    post:
+      consumes:
+      - application/json
+      description: Sends a notification via configured messengers (e.g., Telegram)
+      parameters:
+      - description: Notification details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/http.NotificationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success response
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Send a push notification
+      tags:
+      - notification
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: X-API-Key
+    type: apiKey
+swagger: "2.0"

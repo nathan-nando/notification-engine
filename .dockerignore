@@ -1,0 +1,34 @@
+# Build directories
+bin/
+
+# Dependency directories
+vendor/
+
+# Test output
+*.out
+*.test
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Source control
+.git/
+.gitignore
+
+# Environment variables
+.env
+.env.*
+
+# Markdown and docs
+*.md
+
+# Ignore Dockerfile itself
+Dockerfile
+.dockerignore
