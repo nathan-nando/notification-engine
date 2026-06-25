@@ -37,9 +37,9 @@ migration-down:
 	@echo "No migrations configured yet."
 
 docker-build:
-	@echo "Building Docker image..."
-	docker build -t notification-engine:latest .
+	@echo "Building Docker image using docker-compose..."
+	docker-compose build
 
 docker-run:
-	@echo "Running Docker container..."
-	docker run -p 8080:8080 --env-file .env notification-engine:latest
+	@echo "Running Docker container using docker-compose..."
+	docker-compose up
