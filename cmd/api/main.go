@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/labstack/echo/v4"
@@ -9,6 +10,7 @@ import (
 
 	"notification-engine/config"
 	_ "notification-engine/docs" // Swagger docs
+	"notification-engine/internal/adapters/broker"
 	"notification-engine/internal/adapters/handlers/http"
 	"notification-engine/internal/adapters/messengers/telegram"
 	"notification-engine/internal/core/usecases"
@@ -30,6 +32,13 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	// Initialize Redis Broker
+	redisBroker, err := broker.NewRedisBroker(cfg.RedisURL)
+	if err != nil {
+		log.Fatalf("Failed to initialize redis broker: %v", err)
+	}
+	log.Println("Successfully connected to Redis PubSub")
+
 	// Initialize Ports and Adapters
 	var messenger usecases.NotificationService
 	
@@ -41,9 +50,21 @@ func main() {
 		messenger = usecases.NewNotificationService(tgAdapter)
 	} else {
 		log.Println("WARNING: Running without Telegram bot configured. Notifications will fail or be logged.")
-		// We could fallback to a dummy/logger messenger here.
-		// For now we will allow it to fail or panic later if messenger is nil, 
-		// but let's assume valid config for production.
+	}
+
+	// Initialize Control Bot
+	if cfg.ControlBotToken != "" {
+		controlBot, err := telegram.NewControlBot(cfg.ControlBotToken, redisBroker)
+		if err != nil {
+			log.Fatalf("Failed to initialize control bot: %v", err)
+		}
+		if controlBot != nil {
+			ctx := context.Background()
+			controlBot.Start(ctx)
+			log.Println("Control Bot listener started.")
+		}
+	} else {
+		log.Println("WARNING: CONTROL_BOT_TOKEN not configured. Two-way commands disabled.")
 	}
 
 	handler := http.NewNotificationHandler(messenger)
